@@ -76,7 +76,7 @@ class Cela_igra():
         self.master.config(menu=meni)
 
         mozno = Menu(meni)
-        mozno.add_command(label="Nova_igra", command=self.nova_igra)
+        mozno.add_command(label="Nova_igra", command=self.razdeli_karte)
         mozno.add_command(label="Shrani igro", command=self.shrani)
         mozno.add_command(label="Naloži igro", command=self.nalozi)
         mozno.add_command(label="Hard", command=self.nalozi)
@@ -88,13 +88,14 @@ class Cela_igra():
 
 
     def razdeli_karte(self):
+        self.karte_talon = karte
         self.karte_igralec=random.sample(self.karte_talon,16)
         self.karte_talon=self.karte_talon.difference(self.karte_igralec)
         self.karte_rac1 = random.sample(self.karte_talon, 16)
         self.karte_talon = self.karte_talon.difference(self.karte_rac1)
         self.karte_rac2= random.sample(self.karte_talon, 16)
         self.karte_talon = self.karte_talon.difference(self.karte_rac2)
-        print(self.karte_igralec,'\n',self.karte_rac1,'\n',self.karte_rac2)
+        print(self.karte_igralec,'\n',self.karte_rac1,'\n',self.karte_rac2,'\n',self.karte_talon)
 
 
     def nova_igra(self):
@@ -125,7 +126,7 @@ class Cela_igra():
         self.napis_tock_igralec.set("igralec: %s" % str(self.igralec))
         self.napis_tock_rac.set("računalnik:%s" % str(self.rac))
 
-    razdeli_karte()
+
 
 
 
