@@ -65,6 +65,10 @@ karte = set([T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15,T16,T17,T18,T19,
 class Cela_igra():
     def __init__(self, master):
         self.master = master
+        self.canvas = Canvas(master, width = 1200, height = 700)
+        self.ozdaje = PhotoImage(file = 'Ozadje.pbm')
+        self.canvas.create_image(600,350, image=self.ozdaje)
+        self.canvas.pack()
         self.točke_igralec=0
         self.točke_rac1= 0
         self.točke_rac2= 0
