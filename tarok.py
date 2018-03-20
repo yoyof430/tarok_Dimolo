@@ -108,7 +108,7 @@ class Cela_igra():
         self.karte_talon = self.karte_talon.difference(self.karte_rac1)
         self.karte_rac2= random.sample(self.karte_talon, 16)
         self.karte_talon = self.karte_talon.difference(self.karte_rac2)
-        self.canvas.delete(self.gumb_window) #pobriše gumb, potem ko je kliknjen
+        #self.canvas.delete(self.gumb_window) #pobriše gumb, potem ko je kliknjen
         print(self.karte_igralec,'\n',self.karte_rac1,'\n',self.karte_rac2,'\n',self.karte_talon)
 
 
