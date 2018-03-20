@@ -67,7 +67,10 @@ class Cela_igra():
         self.master = master
         self.canvas = Canvas(master, width = 1200, height = 700)
         self.ozdaje = PhotoImage(file = 'Ozadje.pbm')
+        self.ozadjeGumba = PhotoImage(file = 'whiskey.png')
         self.canvas.create_image(600,350, image=self.ozdaje)
+
+
         self.canvas.pack()
         self.točke_igralec=0
         self.točke_rac1= 0
@@ -78,6 +81,12 @@ class Cela_igra():
         self.karte_talon=karte
         meni = Menu(self.master)
         self.master.config(menu=meni)
+        self.gumb = Button(self.canvas, command = lambda:[self.razdeli_karte, self.klik_gumba])
+        self.gumb.configure(width = 150, height = 150, text = 'ZAČNI IGRO', image = self.ozadjeGumba, state = ACTIVE)
+        self.gumb_window = self.canvas.create_window(600,350, window = self.gumb)
+        self.gumb.bind('<Button-1>', self.klik_gumba)
+
+
 
         mozno = Menu(meni)
         mozno.add_command(label="Nova_igra", command=self.razdeli_karte)
@@ -105,6 +114,9 @@ class Cela_igra():
         self.rezultat = ""
         self.pripravi_canvas()
         self.posodobi()
+
+    def klik_gumba(self,event):
+        self.gumb.grid_forget()
 
     def shrani(self):
         with open("lizard.txt", 'w') as a:
