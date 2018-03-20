@@ -77,10 +77,7 @@ class Cela_igra():
 
         mozno = Menu(meni)
         mozno.add_command(label="Nova_igra", command=self.razdeli_karte)
-        mozno.add_command(label="Shrani igro", command=self.shrani)
-        mozno.add_command(label="Naloži igro", command=self.nalozi)
-        mozno.add_command(label="Hard", command=self.nalozi)
-        mozno.add_command(label="Easy", command=self.nalozi)
+
         meni.add_cascade(label="Možnosti", menu=mozno)
 
         frame = Frame(root, width=600, height=600)
