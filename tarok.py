@@ -1,9 +1,11 @@
 ## TAROK
 
 from tkinter import *
+from tkinter.font import Font
 import random
 
 root = Tk()
+
 
 T1='XT1'
 T2='XT2'
@@ -66,9 +68,11 @@ class Cela_igra():
     def __init__(self, master):
         self.master = master
         self.canvas = Canvas(master, width = 1200, height = 700)
-        self.ozdaje = PhotoImage(file = 'Ozadje.pbm')
-        self.ozadjeGumba = PhotoImage(file = 'whiskey.png')
+        self.ozdaje = PhotoImage(file = 'Slike/LesenoOzadje.png')
+        self.napis = PhotoImage(file = 'Slike/ZnakFinal.png')
         self.canvas.create_image(600,350, image=self.ozdaje)
+        self.canvas.create_image(600,200, image = self.napis, tag = 'napis')
+        self.font = Font(family='Western Normal', size = 16)
 
         self.klikGumba = False
 
@@ -84,8 +88,8 @@ class Cela_igra():
         meni = Menu(self.master)
         self.master.config(menu=meni)
         self.gumb = Button(self.canvas, command = self.razdeli_karte)
-        self.gumb.configure(width = 150, height = 150, text = 'ZAČNI IGRO', image = self.ozadjeGumba)
-        self.gumb_window = self.canvas.create_window(600,350, window = self.gumb)
+        self.gumb.configure(width = 15, height = 5, text = 'START GAME', font = self.font, bg = '#994C00')
+        self.gumb_window = self.canvas.create_window(600,500, window = self.gumb)
 
 
 
@@ -108,7 +112,8 @@ class Cela_igra():
         self.karte_talon = self.karte_talon.difference(self.karte_rac1)
         self.karte_rac2= random.sample(self.karte_talon, 16)
         self.karte_talon = self.karte_talon.difference(self.karte_rac2)
-        #self.canvas.delete(self.gumb_window) #pobriše gumb, potem ko je kliknjen
+        self.canvas.delete(self.gumb_window, 'napis') #pobriše gumb, potem ko je kliknjen
+
         print(self.karte_igralec,'\n',self.karte_rac1,'\n',self.karte_rac2,'\n',self.karte_talon)
 
 
@@ -147,4 +152,5 @@ class Cela_igra():
 
 
 aplikacija = Cela_igra(root)
+root.state('zoomed') #windowed
 root.mainloop()
