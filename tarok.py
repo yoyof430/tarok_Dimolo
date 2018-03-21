@@ -117,7 +117,7 @@ class Cela_igra():
         self.canvas.delete(self.gumb_window, 'napis') #pobriše gumb, potem ko je kliknjen
         PlaySound('Slike/Zvok.wav', SND_FILENAME)
 
-        print(self.karte_igralec,'\n',self.karte_rac1,'\n',self.karte_rac2,'\n',self.karte_talon)
+        #print(self.karte_igralec,'\n',self.karte_rac1,'\n',self.karte_rac2,'\n',self.karte_talon)
 
 
 
