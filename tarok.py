@@ -107,6 +107,7 @@ class Cela_igra():
 
 
     def razdeli_karte(self):
+        PlaySound('Slike/Zvok.wav', SND_ASYNC)
         self.karte_talon = karte
         self.karte_igralec=random.sample(self.karte_talon,16)
         self.karte_talon=self.karte_talon.difference(self.karte_igralec)
@@ -115,7 +116,7 @@ class Cela_igra():
         self.karte_rac2= random.sample(self.karte_talon, 16)
         self.karte_talon = self.karte_talon.difference(self.karte_rac2)
         self.canvas.delete(self.gumb_window, 'napis') #pobriše gumb, potem ko je kliknjen
-        PlaySound('Slike/Zvok.wav', SND_FILENAME)
+
 
         #print(self.karte_igralec,'\n',self.karte_rac1,'\n',self.karte_rac2,'\n',self.karte_talon)
 
