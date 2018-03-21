@@ -2,6 +2,7 @@
 
 from tkinter import *
 from tkinter.font import Font
+from winsound import *
 import random
 
 root = Tk()
@@ -73,6 +74,7 @@ class Cela_igra():
         self.canvas.create_image(600,350, image=self.ozdaje)
         self.canvas.create_image(600,200, image = self.napis, tag = 'napis')
         self.font = Font(family='Western Normal', size = 16)
+        #self.zvok = lambda: PlaySound('Slike/Zvok.wav', SND_FILENAME)
 
         self.klikGumba = False
 
@@ -113,6 +115,7 @@ class Cela_igra():
         self.karte_rac2= random.sample(self.karte_talon, 16)
         self.karte_talon = self.karte_talon.difference(self.karte_rac2)
         self.canvas.delete(self.gumb_window, 'napis') #pobriše gumb, potem ko je kliknjen
+        PlaySound('Slike/Zvok.wav', SND_FILENAME)
 
         print(self.karte_igralec,'\n',self.karte_rac1,'\n',self.karte_rac2,'\n',self.karte_talon)
 
