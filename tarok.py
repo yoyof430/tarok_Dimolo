@@ -57,7 +57,7 @@ class Cela_igra():
 
     def prikazi_karte(self,sl):
         x = 200
-        y = 600
+        y = 550
         fi = 135
         dfi = 90/(len(self.karte_igralec)-2)
         for sez in sl.values():
@@ -92,5 +92,5 @@ class Cela_igra():
 
 
 aplikacija = Cela_igra(root)
-#root.state('zoomed') #windowed
+root.state('zoomed') #windowed
 root.mainloop()
