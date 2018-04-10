@@ -87,9 +87,10 @@ class Cela_igra():
     def premakni_karto(self, event):
         '''najde kliknjeno karto in jo premakne v vidno polje'''
         self.kliknjenaKarta = self.canvas.find_overlapping(event.x, event.y, event.x+2, event.y+2)[-1] #zadnji narisan element
-        x = self.slovarSlik[self.kliknjenaKarta][0]
-        y = self.slovarSlik[self.kliknjenaKarta][1]
-        self.canvas.coords(self.kliknjenaKarta, x-40,y-20)
+        if self.kliknjenaKarta >= 3:
+            x = self.slovarSlik[self.kliknjenaKarta][0]
+            y = self.slovarSlik[self.kliknjenaKarta][1]
+            self.canvas.coords(self.kliknjenaKarta, x-40,y-20)
 
     def vrni_karto_nazaj(self,event):
         '''vrne karto nazaj na svoje prvotno mesto'''
@@ -101,7 +102,8 @@ class Cela_igra():
     def igraj_karto(self,event):
         '''vrže karto na igralno površino'''
         self.igranaKarta = self.canvas.find_overlapping(event.x, event.y, event.x+2, event.y+2)[-1]
-        self.canvas.coords(self.igranaKarta,600,200)
+        if self.igranaKarta >= 3:
+            self.canvas.coords(self.igranaKarta,600,200)
 
     #def ponastavi(self):
 
