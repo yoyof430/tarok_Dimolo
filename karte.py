@@ -9,7 +9,7 @@ class Karte():
         return self.moc<other.moc
 
     def __repr__(self):
-        return self.barva+' '+str(self.moc)
+        return str(self.barva)+' '+str(self.moc)
 
 
 def ustvari_karte():
