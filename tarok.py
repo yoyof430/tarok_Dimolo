@@ -6,6 +6,7 @@ from winsound import *
 from karte import *
 from math import *
 import random
+from time import *
 
 #print(type(karte))
 root = Tk()
@@ -25,6 +26,8 @@ class Cela_igra():
         self.kliknjenaKarta = tuple()
         self.igranaKarta = tuple()
         self.sl = dict()
+        self.pomozniSeznam = list()
+        self.dx = int()
 
 
         self.canvas.pack()
@@ -43,13 +46,6 @@ class Cela_igra():
         self.canvas.bind('<Button-3>', self.premakni_karto)
         self.canvas.bind('<ButtonRelease-3>', self.vrni_karto_nazaj)
         self.canvas.bind('<Button-1>', self.igraj_karto)
-
-
-
-
-
-
-
 
 
         mozno = Menu(meni)
@@ -72,10 +68,14 @@ class Cela_igra():
 
     def prikazi_karte(self,sl):
         '''nariše igralčeve karte na platnu'''
-        x = 200
+        x = 200 + self.dx
         y = 600
         fi = 135
-        dfi = 90/(len(self.karte_igralec)-2)
+        #Če ostaneta dve karti na koncu
+        try:
+            dfi = 90/(len(self.karte_igralec)-2)
+        except:
+            dfi = 45
 
         for sez in sl.values():
             sez.sort()
@@ -87,10 +87,27 @@ class Cela_igra():
                 fi -= dfi
         #print(self.slovarSlik)
 
+    def pocisti(self):
+        '''pobriše do zdaj narisane karte, razen odigrane karte'''
+        for i in self.slovarSlik.keys():
+            if i == self.igranaKarta:
+                pass
+            else:
+                self.canvas.delete(i)
+
+    def nastavi(self):
+        '''zbirše odigrano karto iz seznama in ponastavi raspored'''
+        barva = self.slovarSlik[self.igranaKarta][2]
+        moc = self.slovarSlik[self.igranaKarta][3]
+        for i, e in enumerate(self.karte_igralec):
+            if e.barva == str(barva) and e.moc == moc:
+                break
+        del self.karte_igralec[i]
+
     def premakni_karto(self, event):
         '''najde kliknjeno karto in jo premakne v vidno polje'''
         self.kliknjenaKarta = self.canvas.find_overlapping(event.x, event.y, event.x+2, event.y+2)[-1] #zadnji narisan element
-        if self.kliknjenaKarta >= 3:
+        if self.kliknjenaKarta in self.slovarSlik.keys():
             x = self.slovarSlik[self.kliknjenaKarta][0]
             y = self.slovarSlik[self.kliknjenaKarta][1]
             self.canvas.coords(self.kliknjenaKarta, x-40,y-20)
@@ -98,19 +115,30 @@ class Cela_igra():
     def vrni_karto_nazaj(self,event):
         '''vrne karto nazaj na svoje prvotno mesto'''
         #ID = self.canvas.find_overlapping(event.x, event.y, event.x + 10, event.y + 10)[-1]
-        if self.kliknjenaKarta >= 3:
+        if self.kliknjenaKarta in self.slovarSlik.keys():
             x = self.slovarSlik[self.kliknjenaKarta][0]
             y = self.slovarSlik[self.kliknjenaKarta][1]
             self.canvas.coords(self.kliknjenaKarta, x, y)
 
+
+
+
     def igraj_karto(self,event):
         '''vrže karto na igralno površino'''
         self.igranaKarta = self.canvas.find_overlapping(event.x, event.y, event.x+2, event.y+2)[-1]
-        print(self.slovarSlik[self.igranaKarta])
-        if self.igranaKarta >= 3:
+        if self.igranaKarta in self.slovarSlik.keys():
             self.canvas.coords(self.igranaKarta,600,200)
-        self.racunalnik1_vrze()
-        self.racunalnik2_vrze()
+            sleep(0.15)
+            self.racunalnik1_vrze()
+            sleep(0.15)
+            self.racunalnik2_vrze()
+            self.nastavi()
+            self.pocisti()
+            self.dx += 30
+            print(self.dx)
+            self.prikazi_karte(self.razvrsti_karte(self.karte_igralec))
+
+
 
     def racunalnik1_vrze(self):
         '''pogleda kaj je uporabnik igral in vrže adekvatno karto'''
@@ -160,14 +188,15 @@ class Cela_igra():
         #PlaySound('Slike/Zvok.wav', SND_ASYNC)
         self.karte_talon = ustvari_karte()
         self.karte_igralec=random.sample(self.karte_talon,16)
-        self.prikazi_karte(self.razvrsti_karte(self.karte_igralec))
+        self.pomozniSeznam = self.karte_igralec.copy()
+        self.prikazi_karte(self.razvrsti_karte(self.pomozniSeznam))
         self.razvrsti_karte(self.karte_igralec)
-        self.karte_talon=self.karte_talon.difference(self.karte_igralec)
+        self.karte_talon=self.karte_talon.difference(self.pomozniSeznam)
         self.karte_rac1 = self.razvrsti_karte(random.sample(self.karte_talon, 16))
-        print("karte računalnik: ",self.karte_rac1)
+        #print("karte računalnik: ",self.karte_rac1)
         self.karte_talon = self.karte_talon.difference(self.karte_rac1)
         self.karte_rac2 = self.razvrsti_karte(random.sample(self.karte_talon, 16))
-        print("karte računalnik: ", self.karte_rac2)
+        #print("karte računalnik: ", self.karte_rac2)
         self.karte_talon = self.karte_talon.difference(self.karte_rac2)
         self.canvas.delete(self.gumb_window, 'napis') #pobriše gumb, potem ko je kliknjen
 
