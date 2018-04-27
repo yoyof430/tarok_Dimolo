@@ -11,6 +11,17 @@ class Karte():
     def __repr__(self):
         return str(self.barva)+' '+str(self.moc)+' '+str(self.vrednost)
 
+def pobere(list):
+    if max(list).moc>10:
+        pob=max(list)
+    else:
+        pob=list[0]
+        if list[1].barva==list[0].barva and list[1]>pob:
+            pob=list[1]
+        if list[2].barva==list[0].barva and list[2]>pob:
+            pob=list[2]
+    return list.index(pob)
+
 
 def ustvari_karte():
     T1=Karte('./Slike/Karte/T1.png', barva = 'tarok', vrednost= 5, moc = 11)
@@ -70,6 +81,3 @@ def ustvari_karte():
     return{S1,S2,S3,S4,S5,S6,S7,S8,H1,H2,H3,H4,H5,H6,H7,H8,D1,D2,D3,D4,D5,D6,D7,D8,C1,C2,C3,C4,C5,C6,C7,C8,T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15,T16,T17,T18,T19,T20,T21,T22}
 
 #print(type(C8))
-
-
-
