@@ -28,6 +28,7 @@ class Cela_igra():
         self.sl = dict()
         self.pomozniSeznam = list()
         self.dx = int()
+        self.dy = int()
 
 
         self.canvas.pack()
@@ -49,18 +50,26 @@ class Cela_igra():
 
 
         mozno = Menu(meni)
-        mozno.add_command(label="Nova_igra", command=self.razdeli_karte)
+        mozno.add_command(label="Nova_igra", command=self.nova_igra)
 
         meni.add_cascade(label="Možnosti", menu=mozno)
 
         frame = Frame(root, width=600, height=600)
         frame.pack()
 
+    def nova_igra(self):
+        '''ponastavi parametre za novo igro'''
+        self.dx = 0
+        self.dy = 0
+        self.razdeli_karte()
+
     def razvrsti_karte(self,seznam):
         '''razvrsti karte po barvi in velikosti'''
         self.sl = {'križ':[],'srce':[],'pik':[],'karo':[],'tarok':[]}
         for el in seznam:
             self.sl[el.barva].append(el)
+
+
         return self.sl
 
 
@@ -69,23 +78,26 @@ class Cela_igra():
     def prikazi_karte(self,sl):
         '''nariše igralčeve karte na platnu'''
         x = 200 + self.dx
-        y = 600
+        y = 600 - self.dy
         fi = 135
         #Če ostaneta dve karti na koncu
-        try:
-            dfi = 90/(len(self.karte_igralec)-2)
-        except:
-            dfi = 45
-
         for sez in sl.values():
-            sez.sort()
-            for el in sez:
-                id = self.canvas.create_image(x, y, image=el.slika)
-                self.slovarSlik[id] = (x,y,el.barva, el.moc)
-                x += 60*sin(radians(fi))
-                y += 30*cos(radians(fi))
-                fi -= dfi
-        #print(self.slovarSlik)
+            if len(self.karte_igralec) < 3:
+                for el in sez:
+
+                    id = self.canvas.create_image(x, y, image=el.slika)
+                    self.slovarSlik[id] = (x, y, el.barva, el.moc)
+                    x += 30
+            else:
+                dfi = 90 / (len(self.karte_igralec) - 2)
+                sez.sort()
+                for el in sez:
+                    id = self.canvas.create_image(x, y, image=el.slika)
+                    self.slovarSlik[id] = (x,y,el.barva, el.moc)
+                    x += 60*sin(radians(fi))
+                    y += 30*cos(radians(fi))
+                    fi -= dfi
+            #print(self.slovarSlik)
 
     def pocisti(self):
         '''pobriše do zdaj narisane karte, razen odigrane karte'''
@@ -128,14 +140,14 @@ class Cela_igra():
         self.igranaKarta = self.canvas.find_overlapping(event.x, event.y, event.x+2, event.y+2)[-1]
         if self.igranaKarta in self.slovarSlik.keys():
             self.canvas.coords(self.igranaKarta,600,200)
-            sleep(0.15)
+            #sleep(0.5)
             self.racunalnik1_vrze()
-            sleep(0.15)
+            #sleep(0.5)
             self.racunalnik2_vrze()
             self.nastavi()
             self.pocisti()
             self.dx += 30
-            print(self.dx)
+            self.dy += 4
             self.prikazi_karte(self.razvrsti_karte(self.karte_igralec))
 
 
@@ -163,21 +175,26 @@ class Cela_igra():
         barva = self.slovarSlik[self.igranaKarta][-2]
         moc = int(self.slovarSlik[self.igranaKarta][-1])
         igranaKarta = str()
-        if self.karte_rac2[barva] != []:
-            for karta in self.karte_rac2[barva]:
-                if karta.moc > moc:
-                    igranaKarta = karta
-                else:
-                    igranaKarta = self.karte_rac2[barva][0]
-        else:
-            if self.karte_rac2["tarok"] != []:
-                igranaKarta = self.karte_rac2["tarok"][0]
-                print(igranaKarta)
+        try:
+            if self.karte_rac2[barva] != []:
+                for karta in self.karte_rac2[barva]:
+                    if karta.moc > moc:
+                        igranaKarta = karta
+                    else:
+                        igranaKarta = self.karte_rac2[barva][0]
             else:
-                igranaKarta = self.karte_rac2[random.choice(self.karte_rac2.keys())][0]
-                print(igranaKarta)
+                igranaKarta = self.karte_rac2["tarok"][0]
+        except:
+            igranaKarta = self.karte_rac2[random.choice(self.karte_rac2.values())][0]
 
         self.canvas.create_image(700, 150, image=igranaKarta.slika, tag='zadnja')
+        self.karte_rac2[igranaKarta.barva].remove(igranaKarta)
+        print(self.karte_rac2)
+        if self.karte_rac2[igranaKarta.barva] == []:
+            self.karte_rac2.pop(igranaKarta.barva, None)
+        print ('2.',self.karte_rac2)
+        #print(self.karte_rac2[random.choice(self.karte_rac2.keys())][0])
+
 
 
 
@@ -188,20 +205,29 @@ class Cela_igra():
         #PlaySound('Slike/Zvok.wav', SND_ASYNC)
         self.karte_talon = ustvari_karte()
         self.karte_igralec=random.sample(self.karte_talon,16)
-        self.pomozniSeznam = self.karte_igralec.copy()
-        self.prikazi_karte(self.razvrsti_karte(self.pomozniSeznam))
-        self.razvrsti_karte(self.karte_igralec)
-        self.karte_talon=self.karte_talon.difference(self.pomozniSeznam)
-        self.karte_rac1 = self.razvrsti_karte(random.sample(self.karte_talon, 16))
-        #print("karte računalnik: ",self.karte_rac1)
+        self.karte_talon=self.karte_talon.difference(self.karte_igralec)
+        self.karte_rac1 = random.sample(self.karte_talon, 16)
         self.karte_talon = self.karte_talon.difference(self.karte_rac1)
-        self.karte_rac2 = self.razvrsti_karte(random.sample(self.karte_talon, 16))
-        #print("karte računalnik: ", self.karte_rac2)
+        self.karte_rac2 = random.sample(self.karte_talon, 16)
         self.karte_talon = self.karte_talon.difference(self.karte_rac2)
+
+        self.pomozniSeznamIgralec = self.karte_igralec.copy()
+        self.pomozniSeznamRac1 = self.karte_rac1.copy()
+        self.pomozniSeznamRac2 = self.karte_rac2.copy()
+        print(self.pomozniSeznamRac2)
+        print(self.karte_talon)
+
+
+        self.razvrsti_karte(self.pomozniSeznamIgralec)
+        self.karte_rac1 = self.razvrsti_karte(self.karte_rac1)
+        self.karte_rac2 = self.razvrsti_karte(self.karte_rac2)
+        self.prikazi_karte(self.razvrsti_karte(self.karte_igralec))
+
+
         self.canvas.delete(self.gumb_window, 'napis') #pobriše gumb, potem ko je kliknjen
 
 
-        print(self.karte_igralec,'\n',self.karte_rac1,'\n',self.karte_rac2,'\n',self.karte_talon)
+        #print(self.karte_igralec,'\n',self.karte_rac1,'\n',self.karte_rac2,'\n',self.karte_talon)
 
 
 
