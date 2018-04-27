@@ -57,6 +57,7 @@ class Cela_igra():
 
         mozno = Menu(meni)
         mozno.add_command(label="Nova_igra", command=self.nova_igra)
+        mozno.add_command(label="Nova_runda", command=self.runda)
 
         meni.add_cascade(label="Možnosti", menu=mozno)
 
@@ -158,9 +159,27 @@ class Cela_igra():
         #self.racunalnik1_vrze()
         # sleep(0.5)
         #self.racunalnik2_vrze()
-        self.runda()
 
 
+    def racunalnik1_igra_prvi(self):
+        igranaKarta = self.karte_rac1[random.choice(list(self.karte_rac1.keys()))][-1]
+        self.igranaKartaRac1 = igranaKarta
+
+        self.canvas.create_image(500, 150, image=igranaKarta.slika, tag='zadnja')
+        self.karte_rac1[igranaKarta.barva].remove(igranaKarta)  # zbrišemo iz slovarja
+        # Brišemo barvo, če je računalnik nima več
+        if self.karte_rac1[igranaKarta.barva] == []:
+            self.karte_rac1.pop(igranaKarta.barva, None)
+
+    def racunalnik1_igra_prvi(self):
+        igranaKarta = self.karte_rac2[random.choice(list(self.karte_rac2.keys()))][-1]
+        self.igranaKartaRac2 = igranaKarta
+
+        self.canvas.create_image(700, 150, image=igranaKarta.slika, tag='zadnja')
+        self.karte_rac2[igranaKarta.barva].remove(igranaKarta)  # zbrišemo iz slovarja
+        # Brišemo barvo, če je računalnik nima več
+        if self.karte_rac2[igranaKarta.barva] == []:
+            self.karte_rac2.pop(igranaKarta.barva, None)
 
 
     def racunalnik1_vrze(self):
@@ -220,26 +239,63 @@ class Cela_igra():
 
         #print(self.karte_rac2[random.choice(self.karte_rac2.keys())][0])
 
-    def runda(self):
-        if self.prvi == 'igralec':
-            sezIg=['igralec','rac1','rac2']
-            #self.igraj_karto()
-            self.racunalnik1_vrze()
-            self.racunalnik2_vrze()
-            seznamVrzenihBarva = [self.igranaKartaIgralec.barva, self.igranaKartaRac1.barva, self.igranaKartaRac2.barva]
-            seznamVrzenihMoc = [self.igranaKartaIgralec.moc, self.igranaKartaRac1.moc, self.igranaKartaRac2.moc]
-            seznamVrzenihVrednost = [self.igranaKartaIgralec.vrednost, self.igranaKartaRac1.vrednost, self.igranaKartaRac2.vrednost]
-            if 'tarok' in seznamVrzenihBarva:
-                najvecji = seznamVrzenihMoc.index(max(seznamVrzenihMoc))
-                self.prvi = sezIg[najvecji]
-                if najvecji == 0:
-                    self.pobraneIgralec.append(seznamVrzenihVrednost)
-                elif najvecji == 1:
-                    self.pobraneRac1.append(seznamVrzenihVrednost)
-                else:
-                    self.pobraneIgralec.append(seznamVrzenihVrednost)
-        print(self.pobraneIgralec)
 
+    def runda(self):
+        igralci=['igralec','rac1','rac2','igralec','rac1']
+        if self.prvi == 'igralec':
+            prva=self.igranaKartaIgralec
+            druga=self.igranaKartaRac1
+            tretja=self.igranaKartaRac2
+            karte=[prva,druga,tretja]
+            self.prvi=igralci[igralci.index(pobere(karte))]
+            if self.prvi=='igralec':
+                self.pobraneIgralec.append(karte)
+            if self.prvi=='rac1':
+                self.pobraneRac1.append(karte)
+            if self.prvi=='rac2':
+                self.pobraneRac2.append(karte)
+        elif self.prvi == 'rac1':
+            prva=self.igraj_karto()
+            druga=self.racunalnik1_vrze()
+            tretja=self.racunalnik2_vrze()
+            karte=[prva,druga,tretja]
+            self.prvi=igralci[igralci.index(pobere(karte))]
+            if self.prvi=='igralec':
+                self.pobraneIgralec.append(karte)
+            if self.prvi=='rac1':
+                self.pobraneRac1.append(karte)
+            if self.prvi=='rac2':
+                self.pobraneRac2.append(karte)
+        elif self.prvi == 'rac2':
+            prva=self.igraj_karto()
+            druga=self.racunalnik1_vrze()
+            tretja=self.racunalnik2_vrze()
+            karte=[prva,druga,tretja]
+            self.prvi=igralci[igralci.index(pobere(karte))]
+            if self.prvi=='igralec':
+                self.pobraneIgralec.append(karte)
+            if self.prvi=='rac1':
+                self.pobraneRac1.append(karte)
+            if self.prvi=='rac2':
+                self.pobraneRac2.append(karte)
+        print(self.prvi)
+        #     sezIg=['igralec','rac1','rac2']
+        #     #self.igraj_karto()
+        #     self.racunalnik1_vrze()
+        #     self.racunalnik2_vrze()
+        #     seznamVrzenihBarva = [self.igranaKartaIgralec.barva, self.igranaKartaRac1.barva, self.igranaKartaRac2.barva]
+        #     seznamVrzenihMoc = [self.igranaKartaIgralec.moc, self.igranaKartaRac1.moc, self.igranaKartaRac2.moc]
+        #     seznamVrzenihVrednost = [self.igranaKartaIgralec.vrednost, self.igranaKartaRac1.vrednost, self.igranaKartaRac2.vrednost]
+        #     if 'tarok' in seznamVrzenihBarva:
+        #         najvecji = seznamVrzenihMoc.index(max(seznamVrzenihMoc))
+        #         self.prvi = sezIg[najvecji]
+        #         if najvecji == 0:
+        #             self.pobraneIgralec.append(seznamVrzenihVrednost)
+        #         elif najvecji == 1:
+        #             self.pobraneRac1.append(seznamVrzenihVrednost)
+        #         else:
+        #             self.pobraneRac2.append(seznamVrzenihVrednost)
+        # print(self.pobraneIgralec)
 
 
 
@@ -264,14 +320,17 @@ class Cela_igra():
         self.karte_rac2 = self.razvrsti_karte(self.karte_rac2)
         self.prikazi_karte(self.razvrsti_karte(self.karte_igralec))
 
+        ##############################da vidmo če deluje pobiranje
+        primerjanje = list(random.sample(self.karte_igralec, 3))
+        print(primerjanje)
+        print(pobere(primerjanje))
+
+        self.racunalnik1_igra_prvi()
 
         self.canvas.delete(self.gumb_window, 'napis') #pobriše gumb, potem ko je kliknjen
 
 
         #print(self.karte_igralec,'\n',self.karte_rac1,'\n',self.karte_rac2,'\n',self.karte_talon)
-
-
-
 
 
 aplikacija = Cela_igra(root)
