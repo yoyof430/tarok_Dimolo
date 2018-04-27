@@ -31,7 +31,7 @@ class Cela_igra():
         self.dy = int()
 
         #Spremenljivke za rezultat
-        self.prvi = ''
+        self.prvi = 'igralec'
         self.pobraneIgralec =list()
         self.pobraneRac1 = list()
         self.pobraneRac2 = list()
@@ -92,14 +92,14 @@ class Cela_igra():
                 for el in sez:
 
                     id = self.canvas.create_image(x, y, image=el.slika)
-                    self.slovarSlik[id] = (x, y, el.barva, el.moc)
+                    self.slovarSlik[id] = (x, y, el)
                     x += 30
             else:
                 dfi = 90 / (len(self.karte_igralec) - 2)
                 sez.sort()
                 for el in sez:
                     id = self.canvas.create_image(x, y, image=el.slika)
-                    self.slovarSlik[id] = (x,y,el.barva, el.moc)
+                    self.slovarSlik[id] = (x,y,el)
                     x += 60*sin(radians(fi))
                     y += 30*cos(radians(fi))
                     fi -= dfi
@@ -115,8 +115,8 @@ class Cela_igra():
 
     def nastavi(self):
         '''zbirše odigrano karto iz seznama in ponastavi raspored'''
-        barva = self.slovarSlik[self.igranaKarta][2]
-        moc = self.slovarSlik[self.igranaKarta][3]
+        barva = self.slovarSlik[self.igranaKarta][-1].barva
+        moc =  self.slovarSlik[self.igranaKarta][-1].moc
         for i, e in enumerate(self.karte_igralec):
             if e.barva == str(barva) and e.moc == moc:
                 break
@@ -145,9 +145,9 @@ class Cela_igra():
         '''vrže karto na igralno površino'''
         self.igranaKarta = self.canvas.find_overlapping(event.x, event.y, event.x+2, event.y+2)[-1]
         if self.igranaKarta in self.slovarSlik.keys():
-            barva = self.slovarSlik[self.igranaKarta][-2]
-            moc = int(self.slovarSlik[self.igranaKarta][-1])
-            self.sl[barva]
+            barva = self.slovarSlik[self.igranaKarta][-1].barva
+            moc = self.slovarSlik[self.igranaKarta][-1].moc
+            self.igranaKartaIgralec = self.slovarSlik[self.igranaKarta][-1]
             self.canvas.coords(self.igranaKarta,600,200)
             self.nastavi()
             self.pocisti()
@@ -155,17 +155,18 @@ class Cela_igra():
             self.dy += 4
             self.prikazi_karte(self.razvrsti_karte(self.karte_igralec))
         # sleep(0.5)
-        self.racunalnik1_vrze()
+        #self.racunalnik1_vrze()
         # sleep(0.5)
-        self.racunalnik2_vrze()
+        #self.racunalnik2_vrze()
         self.runda()
+
 
 
 
     def racunalnik1_vrze(self):
         '''pogleda kaj je uporabnik igral in vrže adekvatno karto'''
-        barva = self.slovarSlik[self.igranaKarta][-2]
-        moc = int(self.slovarSlik[self.igranaKarta][-1])
+        barva = self.slovarSlik[self.igranaKarta][-1].barva
+        moc = self.slovarSlik[self.igranaKarta][-1].moc
         igranaKarta = str()
         if barva in self.karte_rac1.keys():  # pogledamo, če rač ima sploh barvo
             if self.karte_rac1[barva] != []:
@@ -192,8 +193,8 @@ class Cela_igra():
 
     def racunalnik2_vrze(self):
         '''pogleda kaj je uporabnik igral in vrže adekvatno karto'''
-        barva = self.slovarSlik[self.igranaKarta][-2]
-        moc = int(self.slovarSlik[self.igranaKarta][-1])
+        barva = self.slovarSlik[self.igranaKarta][-1].barva
+        moc = self.slovarSlik[self.igranaKarta][-1].moc
         igranaKarta = str()
         if barva in self.karte_rac2.keys(): #pogledamo, če rač ima sploh barvo
             if self.karte_rac2[barva] != []:
@@ -220,7 +221,26 @@ class Cela_igra():
         #print(self.karte_rac2[random.choice(self.karte_rac2.keys())][0])
 
     def runda(self):
-        print(self.igranaKartaIgralec,'\n', self.igranaKartaRac1, '\n', self.igranaKartaRac2)
+        if self.prvi == 'igralec':
+            sezIg=['igralec','rac1','rac2']
+            #self.igraj_karto()
+            self.racunalnik1_vrze()
+            self.racunalnik2_vrze()
+            seznamVrzenihBarva = [self.igranaKartaIgralec.barva, self.igranaKartaRac1.barva, self.igranaKartaRac2.barva]
+            seznamVrzenihMoc = [self.igranaKartaIgralec.moc, self.igranaKartaRac1.moc, self.igranaKartaRac2.moc]
+            seznamVrzenihVrednost = [self.igranaKartaIgralec.vrednost, self.igranaKartaRac1.vrednost, self.igranaKartaRac2.vrednost]
+            if 'tarok' in seznamVrzenihBarva:
+                najvecji = seznamVrzenihMoc.index(max(seznamVrzenihMoc))
+                self.prvi = sezIg[najvecji]
+                if najvecji == 0:
+                    self.pobraneIgralec.append(seznamVrzenihVrednost)
+                elif najvecji == 1:
+                    self.pobraneRac1.append(seznamVrzenihVrednost)
+                else:
+                    self.pobraneIgralec.append(seznamVrzenihVrednost)
+        print(self.pobraneIgralec)
+
+
 
 
 
@@ -257,3 +277,4 @@ class Cela_igra():
 aplikacija = Cela_igra(root)
 root.state('zoomed') #windowed
 root.mainloop()
+
