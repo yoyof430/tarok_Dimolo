@@ -30,6 +30,9 @@ class Cela_igra():
         self.dx = int()
         self.dy = int()
 
+        self.slovarSlikTalon = dict()
+
+
         #Spremenljivke za rezultat
         self.prvi = 'igralec'
         self.pobraneIgralec =list()
@@ -47,7 +50,7 @@ class Cela_igra():
         self.karte_talon=set()
         meni = Menu(self.master)
         self.master.config(menu=meni)
-        self.gumb = Button(self.canvas, command = self.razdeli_karte)
+        self.gumb = Button(self.canvas, command = self.izberi_igro)
         self.gumb.configure(width = 15, height = 5, text = 'START GAME', font = self.font, bg = '#994C00')
         self.gumb_window = self.canvas.create_window(600,500, window = self.gumb)
         self.canvas.bind('<Button-3>', self.premakni_karto)
@@ -70,6 +73,91 @@ class Cela_igra():
         self.dy = 0
         self.razdeli_karte()
 
+    def izberi_igro(self):
+        '''funkcija določi kateri igro bo igralec igral'''
+        self.label = Label(self.master, text = 'Izberi igro')
+        self.label.configure(width = 15, height = 4, font = self.font, bg = '#994C00')
+        self.label_window = self.canvas.create_window(600,100, window = self.label)
+        self.Tri = Button(self.canvas, text = 'Tri', command = self.razdeli_talon3)
+        self.Tri.configure(width=10, height=4, font=self.font, bg='#994C00')
+        self.Dva = Button(self.canvas, text='Dva', command = self.razdeli_talon2)
+        self.Dva.configure(width=10, height=4, font=self.font, bg='#994C00')
+        self.Ena = Button(self.canvas, text='Ena', command = self.razdeli_talon1)
+        self.Ena.configure(width=10, height=4, font=self.font, bg='#994C00')
+        self.Klop = Button(self.canvas, text='Klop', command=self.klop)
+        self.Klop.configure(width=10, height=4, font=self.font, bg='#994C00')
+        self.Tri_window = self.canvas.create_window(600, 220, window=self.Tri)
+        self.Dva_window = self.canvas.create_window(600, 320, window=self.Dva)
+        self.Ena_window = self.canvas.create_window(600, 420, window=self.Ena)
+        self.Klop_window = self.canvas.create_window(600, 520, window=self.Klop)
+
+
+
+
+        self.canvas.delete(self.gumb_window, 'napis') #zbriše gumb 'Začni igro'
+
+    def razdeli_talon3(self):
+        'razdeli talon na 2 dela po tri karte'
+        self.canvas.delete(self.Tri_window, self.Dva_window, self.Ena_window, self.label_window, self.Klop_window)
+        self.razdeli_karte()
+        self.tri = True
+        x = 350
+        y = 200
+        dx = 0
+        for el in self.karte_talon[0:3]:
+            id = self.canvas.create_image(x+dx, y, image=el.slika)
+            self.slovarSlikTalonl[id] = (x, y, el)
+            dx +=50
+        x = 650
+        dx = 0
+        for el in self.karte_talon[3:6]:
+            id = self.canvas.create_image(x + dx, y, image=el.slika)
+            self.slovarSlikTalonl[id] = (x, y, el)
+            dx += 50
+
+    def razdeli_talon2(self):
+        'razdeli talon na 3 dela po dve karti'
+        self.canvas.delete(self.Tri_window, self.Dva_window, self.Ena_window, self.label_window, self.Klop_window)
+        self.razdeli_karte()
+        self.dva = True
+        x = 350
+        y = 200
+        dx = 0
+        for el in self.karte_talon:
+            if self.karte_talon.index(el) <= 1:
+                id = self.canvas.create_image(x + dx, y, image=el.slika)
+                self.slovarSlikTalonl[id] = (x,y,el)
+                dx += 50
+            elif self.karte_talon.index(el) <= 3:
+                x = 550
+                id = self.canvas.create_image(x + dx, y, image=el.slika)
+                self.slovarSlikTalonl[id] = (x, y, el)
+                dx += 50
+            else:
+                x = 750
+                id = self.canvas.create_image(x + dx, y, image=el.slika)
+                self.slovarSlikTalonl[id] = (x, y, el)
+                dx += 50
+    def razdeli_talon1(self):
+        '''razdeli talon na 6 delov po eno karto'''
+        self.canvas.delete(self.Tri_window, self.Dva_window, self.Ena_window, self.label_window, self.Klop_window)
+        self.razdeli_karte()
+        self.ena = True
+        x = 350
+        y = 200
+        for el in self.karte_talon:
+            id = self.canvas.create_image(x,y, image = el.slika)
+            self.slovarSlikTalonl[id] = (x, y, el)
+            x += 120
+
+    def klop(self):
+        '''če igralec izbere igro klop'''
+        self.canvas.delete(self.Tri_window, self.Dva_window, self.Ena_window, self.label_window, self.Klop_window)
+        self.klop = True
+        self.razdeli_karte()
+
+
+
     def razvrsti_karte(self,seznam):
         '''razvrsti karte po barvi in velikosti'''
         self.sl = {'križ':[],'srce':[],'pik':[],'karo':[],'tarok':[]}
@@ -91,7 +179,6 @@ class Cela_igra():
         for sez in sl.values():
             if len(self.karte_igralec) < 3:
                 for el in sez:
-
                     id = self.canvas.create_image(x, y, image=el.slika)
                     self.slovarSlik[id] = (x, y, el)
                     x += 30
@@ -278,7 +365,7 @@ class Cela_igra():
                 self.pobraneRac1.append(karte)
             if self.prvi=='rac2':
                 self.pobraneRac2.append(karte)
-        print(self.prvi)
+        #print(self.prvi)
         #     sezIg=['igralec','rac1','rac2']
         #     #self.igraj_karto()
         #     self.racunalnik1_vrze()
@@ -311,7 +398,7 @@ class Cela_igra():
         self.karte_rac1 = random.sample(self.karte_talon, 16)
         self.karte_talon = self.karte_talon.difference(self.karte_rac1)
         self.karte_rac2 = random.sample(self.karte_talon, 16)
-        self.karte_talon = self.karte_talon.difference(self.karte_rac2)
+        self.karte_talon = list(self.karte_talon.difference(self.karte_rac2))
 
         self.pomozniSeznamIgralec = self.karte_igralec.copy()
 
@@ -321,13 +408,13 @@ class Cela_igra():
         self.prikazi_karte(self.razvrsti_karte(self.karte_igralec))
 
         ##############################da vidmo če deluje pobiranje
-        primerjanje = list(random.sample(self.karte_igralec, 3))
-        print(primerjanje)
-        print(pobere(primerjanje))
+        #primerjanje = list(random.sample(self.karte_igralec, 3))
+        #print(primerjanje)
+        #print(pobere(primerjanje))
 
-        self.racunalnik1_igra_prvi()
+        #self.racunalnik1_igra_prvi()
 
-        self.canvas.delete(self.gumb_window, 'napis') #pobriše gumb, potem ko je kliknjen
+         #pobriše gumb, potem ko je kliknjen
 
 
         #print(self.karte_igralec,'\n',self.karte_rac1,'\n',self.karte_rac2,'\n',self.karte_talon)
