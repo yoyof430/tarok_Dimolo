@@ -6,7 +6,7 @@ from winsound import *
 from karte import *
 from math import *
 import random
-from time import *
+import time
 
 #print(type(karte))
 root = Tk()
@@ -25,6 +25,7 @@ class Cela_igra():
         self.slovarSlik = dict()
         self.kliknjenaKarta = tuple()
         self.igranaKarta = tuple()
+        self.prvaKarta=tuple()
         self.sl = dict()
         self.pomozniSeznam = list()
         self.dx = int()
@@ -41,6 +42,8 @@ class Cela_igra():
         self.ena = False
         self.klop = False
         self.seznamZalozenih = list()
+        self.rac1_igral=False
+        self.rac2_igral=False
 
 
         #Spremenljivke za rezultat
@@ -62,7 +65,7 @@ class Cela_igra():
         meni = Menu(self.master)
         self.master.config(menu=meni)
 
-        self.gumb = Button(self.canvas, command = self.izberi_igro)
+        self.gumb = Button(self.canvas, command = self.nova_igra)
         self.gumb.configure(width = 15, height = 5, text = 'START GAME', font = self.font, bg = '#994C00')
         self.gumb_window = self.canvas.create_window(600,500, window = self.gumb)
 
@@ -75,7 +78,6 @@ class Cela_igra():
 
         mozno = Menu(meni)
         mozno.add_command(label="Nova_igra", command=self.nova_igra)
-        mozno.add_command(label="Nova_runda", command=self.runda)
 
         meni.add_cascade(label="Možnosti", menu=mozno)
 
@@ -84,9 +86,35 @@ class Cela_igra():
 
     def nova_igra(self):
         '''ponastavi parametre za novo igro'''
+        #resetira spremelnjivke
+        self.točke_igralec = 0
+        self.točke_rac1 = 0
+        self.točke_rac2 = 0
+        self.karte_igralec = set()
+        self.karte_rac1 = set()
+        self.karte_rac2 = set()
+        self.karte_talon = set()
+        self.prvi = 'igralec'
+        self.pobraneIgralec = list()
+        self.pobraneRac1 = list()
+        self.pobraneRac2 = list()
+        self.slovarSlikTalon = dict()
+        self.stevecKlikov = 0
+        self.preveri = False
+        self.izbrano = False
+        self.premakniVx = 0
+        self.tri = False
+        self.dva = False
+        self.ena = False
+        self.klop = False
+        self.seznamZalozenih = list()
+        self.rac1_igral = False
+        self.rac2_igral = False
+
         self.dx = 0
         self.dy = 0
-        self.razdeli_karte()
+        self.izberi_igro()
+
 
     def izberi_igro(self):
         '''funkcija določi kateri igro bo igralec igral'''
@@ -170,7 +198,8 @@ class Cela_igra():
         '''če igralec izbere igro klop'''
         self.canvas.delete(self.Tri_window, self.Dva_window, self.Ena_window, self.label_window, self.Klop_window)
         self.klop = True
-        self.razdeli_karte()
+        print('lol')
+        self.prikazi_karte()
 
     def zalozi_in_zacni(self,event):
         '''Igralec izbere katere karte bo vzel iz talona in začne igro'''
@@ -297,13 +326,22 @@ class Cela_igra():
             self.dx += 30
             self.dy += 4
             self.prikazi_karte(self.razvrsti_karte(self.karte_igralec))
-        # sleep(0.5)
-        #self.racunalnik1_vrze()
-        # sleep(0.5)
-        #self.racunalnik2_vrze()
+        if not self.rac2_igral:
+            print(self.igranaKartaIgralec)
+            self.prvaKarta=self.igranaKartaIgralec
+            self.racunalnik1_vrze()
+            self.racunalnik2_vrze()
+        if self.rac2_igral and not self.rac1_igral:
+            self.racunalnik1_vrze()
+        self.sestej_tocke_in_doloci_kdo_zacne_naslednjo_rundo()
+
 
 
     def racunalnik1_igra_prvi(self):
+        print('igra rac1')
+        time.sleep(1)
+        self.pocisti()
+        self.prikazi_karte(self.razvrsti_karte(self.karte_igralec))
         igranaKarta = self.karte_rac1[random.choice(list(self.karte_rac1.keys()))][-1]
         self.igranaKartaRac1 = igranaKarta
 
@@ -312,9 +350,16 @@ class Cela_igra():
         # Brišemo barvo, če je računalnik nima več
         if self.karte_rac1[igranaKarta.barva] == []:
             self.karte_rac1.pop(igranaKarta.barva, None)
+        self.rac1_igral=True
+        self.rac2_igral=True
+        self.prvaKarta=self.igranaKartaRac1
 
-    def racunalnik1_igra_prvi(self):
-        igranaKarta = self.karte_rac2[random.choice(list(self.karte_rac2.keys()))][-1]
+    def racunalnik2_igra_prvi(self):
+        print('igra rac2')
+        time.sleep(1)
+        self.pocisti()
+        self.prikazi_karte(self.razvrsti_karte(self.karte_igralec))
+        igranaKarta = self.karte_rac2[random.choice(list(self.karte_rac2.keys()))][0]
         self.igranaKartaRac2 = igranaKarta
 
         self.canvas.create_image(700, 150, image=igranaKarta.slika, tag='zadnja')
@@ -322,12 +367,14 @@ class Cela_igra():
         # Brišemo barvo, če je računalnik nima več
         if self.karte_rac2[igranaKarta.barva] == []:
             self.karte_rac2.pop(igranaKarta.barva, None)
+        self.rac2_igral = True
+        self.prvaKarta=self.igranaKartaRac2
 
 
     def racunalnik1_vrze(self):
         '''pogleda kaj je uporabnik igral in vrže adekvatno karto'''
-        barva = self.slovarSlik[self.igranaKarta][-1].barva
-        moc = self.slovarSlik[self.igranaKarta][-1].moc
+        barva = self.prvaKarta.barva
+        moc = self.prvaKarta.moc
         igranaKarta = str()
         if barva in self.karte_rac1.keys():  # pogledamo, če rač ima sploh barvo
             if self.karte_rac1[barva] != []:
@@ -382,62 +429,59 @@ class Cela_igra():
         #print(self.karte_rac2[random.choice(self.karte_rac2.keys())][0])
 
 
-    def runda(self):
+    def sestej_tocke_in_doloci_kdo_zacne_naslednjo_rundo(self):
         igralci=['igralec','rac1','rac2','igralec','rac1']
         if self.prvi == 'igralec':
             prva=self.igranaKartaIgralec
             druga=self.igranaKartaRac1
             tretja=self.igranaKartaRac2
             karte=[prva,druga,tretja]
-            self.prvi=igralci[igralci.index(pobere(karte))]
+            print(karte)
+            self.prvi=igralci[pobere(karte)]
             if self.prvi=='igralec':
                 self.pobraneIgralec.append(karte)
             if self.prvi=='rac1':
                 self.pobraneRac1.append(karte)
+                time.sleep(1)
+                self.racunalnik1_igra_prvi()
             if self.prvi=='rac2':
                 self.pobraneRac2.append(karte)
+                time.sleep(1)
+                self.racunalnik2_igra_prvi()
         elif self.prvi == 'rac1':
-            prva=self.igraj_karto()
-            druga=self.racunalnik1_vrze()
-            tretja=self.racunalnik2_vrze()
+            prva=self.igranaKartaRac1
+            druga=self.igranaKartaRac2
+            tretja=self.igranaKartaIgralec
             karte=[prva,druga,tretja]
-            self.prvi=igralci[igralci.index(pobere(karte))]
+            print(karte)
+            self.prvi=igralci[pobere(karte)+1]
             if self.prvi=='igralec':
                 self.pobraneIgralec.append(karte)
             if self.prvi=='rac1':
                 self.pobraneRac1.append(karte)
+                time.sleep(1)
+                self.racunalnik1_igra_prvi()
             if self.prvi=='rac2':
                 self.pobraneRac2.append(karte)
+                time.sleep(1)
+                self.racunalnik2_igra_prvi()
         elif self.prvi == 'rac2':
-            prva=self.igraj_karto()
-            druga=self.racunalnik1_vrze()
-            tretja=self.racunalnik2_vrze()
+            prva=self.igranaKartaRac2
+            druga=self.igranaKartaIgralec
+            tretja=self.igranaKartaRac1
             karte=[prva,druga,tretja]
-            self.prvi=igralci[igralci.index(pobere(karte))]
+            print(karte)
+            self.prvi=igralci[pobere(karte)+2]
             if self.prvi=='igralec':
                 self.pobraneIgralec.append(karte)
             if self.prvi=='rac1':
                 self.pobraneRac1.append(karte)
+                time.sleep(1)
+                self.racunalnik1_igra_prvi()
             if self.prvi=='rac2':
                 self.pobraneRac2.append(karte)
-        #print(self.prvi)
-        #     sezIg=['igralec','rac1','rac2']
-        #     #self.igraj_karto()
-        #     self.racunalnik1_vrze()
-        #     self.racunalnik2_vrze()
-        #     seznamVrzenihBarva = [self.igranaKartaIgralec.barva, self.igranaKartaRac1.barva, self.igranaKartaRac2.barva]
-        #     seznamVrzenihMoc = [self.igranaKartaIgralec.moc, self.igranaKartaRac1.moc, self.igranaKartaRac2.moc]
-        #     seznamVrzenihVrednost = [self.igranaKartaIgralec.vrednost, self.igranaKartaRac1.vrednost, self.igranaKartaRac2.vrednost]
-        #     if 'tarok' in seznamVrzenihBarva:
-        #         najvecji = seznamVrzenihMoc.index(max(seznamVrzenihMoc))
-        #         self.prvi = sezIg[najvecji]
-        #         if najvecji == 0:
-        #             self.pobraneIgralec.append(seznamVrzenihVrednost)
-        #         elif najvecji == 1:
-        #             self.pobraneRac1.append(seznamVrzenihVrednost)
-        #         else:
-        #             self.pobraneRac2.append(seznamVrzenihVrednost)
-        # print(self.pobraneIgralec)
+                time.sleep(1)
+                self.racunalnik2_igra_prvi()
 
 
 
@@ -462,14 +506,6 @@ class Cela_igra():
         self.karte_rac2 = self.razvrsti_karte(self.karte_rac2)
         self.prikazi_karte(self.razvrsti_karte(self.karte_igralec))
 
-        ##############################da vidmo če deluje pobiranje
-        #primerjanje = list(random.sample(self.karte_igralec, 3))
-        #print(primerjanje)
-        #print(pobere(primerjanje))
-
-        #self.racunalnik1_igra_prvi()
-
-         #pobriše gumb, potem ko je kliknjen
 
 
         #print(self.karte_igralec,'\n',self.karte_rac1,'\n',self.karte_rac2,'\n',self.karte_talon)
