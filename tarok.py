@@ -30,7 +30,17 @@ class Cela_igra():
         self.dx = int()
         self.dy = int()
 
+        #Spremenljivke za talon
         self.slovarSlikTalon = dict()
+        self.stevecKlikov = 0
+        self.preveri = False
+        self.izbrano = False
+        self.premakniVx = 0
+        self.tri = False
+        self.dva = False
+        self.ena = False
+        self.klop = False
+        self.seznamZalozenih = list()
 
 
         #Spremenljivke za rezultat
@@ -38,6 +48,7 @@ class Cela_igra():
         self.pobraneIgralec =list()
         self.pobraneRac1 = list()
         self.pobraneRac2 = list()
+
 
 
         self.canvas.pack()
@@ -50,12 +61,16 @@ class Cela_igra():
         self.karte_talon=set()
         meni = Menu(self.master)
         self.master.config(menu=meni)
+
         self.gumb = Button(self.canvas, command = self.izberi_igro)
         self.gumb.configure(width = 15, height = 5, text = 'START GAME', font = self.font, bg = '#994C00')
         self.gumb_window = self.canvas.create_window(600,500, window = self.gumb)
+
         self.canvas.bind('<Button-3>', self.premakni_karto)
         self.canvas.bind('<ButtonRelease-3>', self.vrni_karto_nazaj)
         self.canvas.bind('<Button-1>', self.igraj_karto)
+        self.canvas.bind('<Control-1>', self.zalozi)
+        self.canvas.bind('<Control-3>', self.zalozi_in_zacni)
 
 
         mozno = Menu(meni)
@@ -102,17 +117,17 @@ class Cela_igra():
         self.razdeli_karte()
         self.tri = True
         x = 350
-        y = 200
+        y = 100
         dx = 0
         for el in self.karte_talon[0:3]:
             id = self.canvas.create_image(x+dx, y, image=el.slika)
-            self.slovarSlikTalonl[id] = (x, y, el)
+            self.slovarSlikTalon[id] = (x, y, el)
             dx +=50
         x = 650
         dx = 0
         for el in self.karte_talon[3:6]:
             id = self.canvas.create_image(x + dx, y, image=el.slika)
-            self.slovarSlikTalonl[id] = (x, y, el)
+            self.slovarSlikTalon[id] = (x, y, el)
             dx += 50
 
     def razdeli_talon2(self):
@@ -121,33 +136,34 @@ class Cela_igra():
         self.razdeli_karte()
         self.dva = True
         x = 350
-        y = 200
+        y = 100
         dx = 0
         for el in self.karte_talon:
             if self.karte_talon.index(el) <= 1:
                 id = self.canvas.create_image(x + dx, y, image=el.slika)
-                self.slovarSlikTalonl[id] = (x,y,el)
+                self.slovarSlikTalon[id] = (x,y,el)
                 dx += 50
             elif self.karte_talon.index(el) <= 3:
                 x = 550
                 id = self.canvas.create_image(x + dx, y, image=el.slika)
-                self.slovarSlikTalonl[id] = (x, y, el)
+                self.slovarSlikTalon[id] = (x, y, el)
                 dx += 50
             else:
                 x = 750
                 id = self.canvas.create_image(x + dx, y, image=el.slika)
-                self.slovarSlikTalonl[id] = (x, y, el)
+                self.slovarSlikTalon[id] = (x, y, el)
                 dx += 50
+
     def razdeli_talon1(self):
         '''razdeli talon na 6 delov po eno karto'''
         self.canvas.delete(self.Tri_window, self.Dva_window, self.Ena_window, self.label_window, self.Klop_window)
         self.razdeli_karte()
         self.ena = True
         x = 350
-        y = 200
+        y = 100
         for el in self.karte_talon:
             id = self.canvas.create_image(x,y, image = el.slika)
-            self.slovarSlikTalonl[id] = (x, y, el)
+            self.slovarSlikTalon[id] = (x, y, el)
             x += 120
 
     def klop(self):
@@ -156,18 +172,54 @@ class Cela_igra():
         self.klop = True
         self.razdeli_karte()
 
+    def zalozi_in_zacni(self,event):
+        '''Igralec izbere katere karte bo vzel iz talona in začne igro'''
+        if self.preveri == False and self.izbrano == True:
+            if self.ena == True:
+                self.kliknjenKupcek = self.canvas.find_overlapping(event.x, event.y, event.x + 2, event.y + 2)[-1]
+                karta = self.slovarSlikTalon[self.kliknjenKupcek][-1]
+                self.karte_igralec.append(karta)
+            else:
+                self.kliknjenKupcek = self.canvas.find_overlapping(event.x-100, event.y, event.x + 100, event.y + 2)[1:]
+                for el in self.kliknjenKupcek:
+                    karta = self.slovarSlikTalon[el][-1]
+                    self.karte_igralec.append(karta)
+            self.pocisti()
+            self.prikazi_karte(self.razvrsti_karte(self.karte_igralec))
+        self.preveri = True
 
+
+
+    def zalozi(self, event):
+        '''Igralec izbere katere karte bo založil'''
+        self.kliknjenaKartaTalon = self.canvas.find_overlapping(event.x, event.y, event.x + 2, event.y + 2)[-1]  # zadnji narisan element
+        if self.kliknjenaKartaTalon in self.slovarSlik.keys():
+            if self.tri == True and self.stevecKlikov <= 2:
+                self.premakniVx += 100
+                self.stevecKlikov += 1
+                self.canvas.coords(self.kliknjenaKartaTalon, 350+self.premakniVx,300)
+                self.seznamZalozenih.append(self.slovarSlik[self.kliknjenaKartaTalon][-1])
+                self.karte_igralec.remove(self.slovarSlik[self.kliknjenaKartaTalon][-1])
+            elif self.dva == True and self.stevecKlikov <= 1:
+                self.premakniVx += 100
+                self.stevecKlikov += 1
+                self.canvas.coords(self.kliknjenaKartaTalon, 350+self.premakniVx,300)
+                self.seznamZalozenih.append(self.slovarSlik[self.kliknjenaKartaTalon][-1])
+                self.karte_igralec.remove(self.slovarSlik[self.kliknjenaKartaTalon][-1])
+            elif self.ena == True and self.stevecKlikov <=0:
+                self.premakniVx += 100
+                self.stevecKlikov += 1
+                self.canvas.coords(self.kliknjenaKartaTalon, 350 + self.premakniVx, 300)
+                self.seznamZalozenih.append(self.slovarSlik[self.kliknjenaKartaTalon][-1])
+                self.karte_igralec.remove(self.slovarSlik[self.kliknjenaKartaTalon][-1])
+            self.izbrano = True
 
     def razvrsti_karte(self,seznam):
         '''razvrsti karte po barvi in velikosti'''
         self.sl = {'križ':[],'srce':[],'pik':[],'karo':[],'tarok':[]}
         for el in seznam:
             self.sl[el.barva].append(el)
-
-
         return self.sl
-
-
 
 
     def prikazi_karte(self,sl):
@@ -200,6 +252,9 @@ class Cela_igra():
                 pass
             else:
                 self.canvas.delete(i)
+        for j in self.slovarSlikTalon:
+            print(j)
+            self.canvas.delete(j)
 
     def nastavi(self):
         '''zbirše odigrano karto iz seznama in ponastavi raspored'''
