@@ -525,6 +525,7 @@ class Cela_igra():
         for karta in self.pobraneIgralec:
             tocke += karta.vrednost
         tocke = tocke - 2 / 3 * (len(self.pobraneIgralec))
+        tocke = roundup(tocke)
         if self.tri or self.dva or self.ena:
             if tocke >= 35:
                 sporocilo = ('------------' + '\n' +
@@ -538,9 +539,11 @@ class Cela_igra():
             for karta in self.pobraneRac1:
                 tockeRac1 += karta.vrednost
             tockeRac1 -= 2 / 3 * (len(self.pobraneRac1))
+            tockeRac1 = roundup(tockeRac1)
             for karta in self.pobraneRac2:
                 tockeRac2 += karta.vrednost
             tockeRac2 -= 2 / 3 * (len(self.pobraneRac2))
+            tockeRac2 = roundup(tockeRac2)
             if min(tocke, tockeRac1, tockeRac2) == tocke:
                 sporocilo = ('------------------------------------' + '\n' +
                              'Tvoje število tock: ' + str(tocke) + '\n' +
