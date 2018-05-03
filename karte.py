@@ -12,6 +12,7 @@ class Karte():
         return str(self.barva)+' '+str(self.moc)+' '+str(self.vrednost)
 
 def pobere(list):
+    '''pogleda katere od kart v seznamu je najmočnejša'''
     if max(list).moc>10:
         pob=max(list)
     else:
@@ -24,6 +25,7 @@ def pobere(list):
 
 
 def ustvari_karte():
+    '''ustvari karte'''
     T1=Karte('./Slike/Karte/T1.png', barva = 'tarok', vrednost= 5, moc = 11)
     T2=Karte('./Slike/Karte/T2.png', barva = 'tarok', vrednost= 1, moc = 12)
     T3=Karte('./Slike/Karte/T3.png', barva = 'tarok', vrednost= 1, moc = 13)
