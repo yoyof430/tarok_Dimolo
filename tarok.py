@@ -360,7 +360,7 @@ class Cela_igra():
         igranaKarta = self.karte_rac1[random.choice(list(self.karte_rac1.keys()))][-1]
         self.igranaKartaRac1 = igranaKarta
 
-        self.canvas.create_image(500, 150, image=igranaKarta.slika, tag='zadnja')
+        self.id_rac1 = self.canvas.create_image(500, 150, image=igranaKarta.slika, tag='zadnja')
         self.karte_rac1[igranaKarta.barva].remove(igranaKarta)  # zbrišemo iz slovarja
         # Brišemo barvo, če je računalnik nima več
         if self.karte_rac1[igranaKarta.barva] == []:
@@ -380,7 +380,7 @@ class Cela_igra():
         igranaKarta = self.karte_rac2[random.choice(list(self.karte_rac2.keys()))][0]
         self.igranaKartaRac2 = igranaKarta
 
-        self.canvas.create_image(700, 150, image=igranaKarta.slika, tag='zadnja')
+        self.id_rac2 = self.canvas.create_image(700, 150, image=igranaKarta.slika, tag='zadnja')
         self.karte_rac2[igranaKarta.barva].remove(igranaKarta)  # zbrišemo iz slovarja
         # Brišemo barvo, če je računalnik nima več
         if self.karte_rac2[igranaKarta.barva] == []:
@@ -419,8 +419,10 @@ class Cela_igra():
     def racunalnik2_vrze(self):
         '''pogleda kaj je uporabnik igral in vrže adekvatno karto'''
         print('rac2 vrze')
-        barva = self.slovarSlik[self.igranaKarta][-1].barva
-        moc = self.slovarSlik[self.igranaKarta][-1].moc
+        #barva = self.slovarSlik[self.igranaKarta][-1].barva
+        #moc = self.slovarSlik[self.igranaKarta][-1].moc
+        barva=self.prvaKarta.barva
+        moc=self.prvaKarta.moc
         igranaKarta = str()
         if barva in self.karte_rac2.keys(): #pogledamo, če rač ima sploh barvo
             if self.karte_rac2[barva] != []:
@@ -498,12 +500,12 @@ class Cela_igra():
             if self.prvi=='igralec':
                 self.pobereIgralec = True
                 self.pobraneIgralec.append(karte)
-            if self.prvi=='rac1':
+            elif self.prvi=='rac1':
                 self.pobereRac1 = True
                 self.pobraneRac1.append(karte)
                 #time.sleep(1)
                 #self.racunalnik1_igra_prvi()
-            if self.prvi=='rac2':
+            elif self.prvi=='rac2':
                 self.pobereRac2 = True
                 self.pobraneRac2.append(karte)
                 #time.sleep(1)
