@@ -12,21 +12,25 @@ import time
 root = Tk()
 
 
+
 class Cela_igra():
     def __init__(self, master):
         self.master = master
+        #Spremenljivke za user interface
         self.canvas = Canvas(master, width = 1200, height = 700)
         self.ozadje = PhotoImage(file = 'Slike/LesenoOzadje.png')
         self.napis = PhotoImage(file = 'Slike/ZnakFinal.png')
         self.canvas.create_image(600,350, image=self.ozadje)
         self.canvas.create_image(600,200, image = self.napis, tag = 'napis')
         self.font = Font(family='Western Normal', size = 16)
+
+        #Spremenljivke za karte
         self.slovarSlik = dict()
         self.kliknjenaKarta = tuple()
         self.igranaKarta = tuple()
         self.prvaKarta=tuple()
-        self.drugaKarta=tuple()
         self.sl = dict()
+        self.pomozniSeznam = list()
         self.dx = int()
         self.dy = int()
 
@@ -42,7 +46,6 @@ class Cela_igra():
         self.klop = False
         self.seznamZalozenih = list()
 
-
         #Spremenljivke za rezultat
         self.prvi = 'igralec'
         self.pobraneIgralec =list()
@@ -52,13 +55,12 @@ class Cela_igra():
         self.id_rac2 = int()
         self.id_karta_klopa = int()
 
-
         #Spremenljivke za določanje vrstnega reda
         self.pobereIgralec = False
         self.pobereRac1 = False
         self.pobereRac2 = False
-
-
+        self.rac1_igral=False
+        self.rac2_igral=False
 
 
         self.canvas.pack()
@@ -81,15 +83,6 @@ class Cela_igra():
         self.canvas.bind('<Button-1>', self.igraj_karto)
         self.canvas.bind('<Control-1>', self.zalozi)
         self.canvas.bind('<Control-3>', self.zalozi_in_zacni)
-
-
-        mozno = Menu(meni)
-        mozno.add_command(label="Nova_igra", command=self.nova_igra)
-
-        meni.add_cascade(label="Možnosti", menu=mozno)
-
-        frame = Frame(root, width=600, height=600)
-        frame.pack()
 
     def nova_igra(self):
         '''ponastavi parametre za novo igro'''
@@ -115,13 +108,9 @@ class Cela_igra():
         self.ena = False
         self.klop = False
         self.seznamZalozenih = list()
-        self.pocisti()
-        try:
-            self.canvas.delete(self.Tri_window, self.Dva_window, self.Ena_window, self.label_window, self.Klop_window)
-        except:
-            print('resno boš klikal nova igra dokler ne dobiš dobrih kart?')
-        if self.prvaKarta!=tuple():
-            self.pocisti_odigrano()
+        self.rac1_igral = False
+        self.rac2_igral = False
+
         self.dx = 0
         self.dy = 0
         self.izberi_igro()
@@ -145,7 +134,6 @@ class Cela_igra():
         self.Ena_window = self.canvas.create_window(640, 300, window=self.Ena)
         self.Klop_window = self.canvas.create_window(760, 300, window=self.Klop)
         self.razdeli_karte()
-
 
         self.canvas.delete(self.gumb_window, 'napis') #zbriše gumb 'Začni igro'
 
@@ -230,7 +218,6 @@ class Cela_igra():
             self.prikazi_karte(self.razvrsti_karte(self.karte_igralec))
         self.preveri = True
 
-
     def zalozi(self, event):
         '''Igralec izbere katere karte bo založil'''
         self.kliknjenaKartaTalon = self.canvas.find_overlapping(event.x, event.y, event.x + 2, event.y + 2)[-1]  # zadnji narisan element
@@ -260,11 +247,7 @@ class Cela_igra():
         self.sl = {'križ':[],'srce':[],'pik':[],'karo':[],'tarok':[]}
         for el in seznam:
             self.sl[el.barva].append(el)
-        for barva in ['križ','srce','pik','karo','tarok']:
-            if self.sl[barva] == []:
-                self.sl.pop(barva, None)
         return self.sl
-
 
     def prikazi_karte(self,sl):
         '''nariše igralčeve karte na platnu'''
@@ -287,6 +270,7 @@ class Cela_igra():
                     x += 60*sin(radians(fi))
                     y += 30*cos(radians(fi))
                     fi -= dfi
+            #print(self.slovarSlik)
 
     def pocisti(self):
         '''pobriše do zdaj narisane karte, razen odigrane karte'''
@@ -324,6 +308,29 @@ class Cela_igra():
             y = self.slovarSlik[self.kliknjenaKarta][1]
             self.canvas.coords(self.kliknjenaKarta, x-40,y-20)
 
+    def preveriKarto(self, barva):
+        '''če je uporabnik izbral karto, ki ni iste barve kot vržena/vržene karte'''
+        seznamBarv = list()
+        for karta in self.karte_igralec:
+            seznamBarv.append(karta.barva)
+        if self.prvi == 'rac1':
+            if barva != self.igranaKartaRac1.barva:
+                self.test = False
+                if self.igranaKartaRac1.barva not in seznamBarv and barva != 'tarok':
+                    self.test = False
+
+        elif self.prvi == 'rac2':
+            if barva != self.igranaKartaRac2.barva:
+                self.test = False
+                if self.igranaKartaRac2.barva not in seznamBarv and barva != 'tarok':
+                    self.test = False
+        print(seznamBarv)
+        #print(self.test)
+
+
+
+
+
     def vrni_karto_nazaj(self,event):
         '''vrne karto nazaj na svoje prvotno mesto'''
         #ID = self.canvas.find_overlapping(event.x, event.y, event.x + 10, event.y + 10)[-1]
@@ -332,80 +339,80 @@ class Cela_igra():
             y = self.slovarSlik[self.kliknjenaKarta][1]
             self.canvas.coords(self.kliknjenaKarta, x, y)
 
-
-
-
     def igraj_karto(self,event):
         '''vrže karto na igralno površino'''
         self.igranaKarta = self.canvas.find_overlapping(event.x, event.y, event.x+2, event.y+2)[-1]
+        self.test = True;
+        self.preveriKarto(self.slovarSlik[self.igranaKarta][-1].barva)
+        #print(self.prvi)
         if self.igranaKarta in self.slovarSlik.keys():
-            barva = self.slovarSlik[self.igranaKarta][-1].barva
-            moc = self.slovarSlik[self.igranaKarta][-1].moc
-            self.igranaKartaIgralec = self.slovarSlik[self.igranaKarta][-1]
-            self.canvas.coords(self.igranaKarta,600,200)
-            self.nastavi()
-            self.pocisti()
-            self.dx += 30
-            self.dy += 4
-            self.prikazi_karte(self.razvrsti_karte(self.karte_igralec))
-        if self.prvi == 'igralec':
-            self.prvaKarta=self.igranaKartaIgralec
-            self.racunalnik1_vrze()
-            self.drugaKarta=self.igranaKartaRac1
-            self.racunalnik2_vrze()
-        elif self.prvi == 'rac2':
-            self.drugaKarta=self.igranaKartaIgralec
-            self.racunalnik1_vrze()
-        self.sestej_in_zacni()
-
+            if self.test:
+                barva = self.slovarSlik[self.igranaKarta][-1].barva
+                moc = self.slovarSlik[self.igranaKarta][-1].moc
+                self.igranaKartaIgralec = self.slovarSlik[self.igranaKarta][-1]
+                self.canvas.coords(self.igranaKarta,600,200)
+                self.nastavi()
+                self.pocisti()
+                self.dx += 30
+                self.dy += 4
+                self.prikazi_karte(self.razvrsti_karte(self.karte_igralec))
+                if self.prvi == 'igralec':
+                    #print(self.igranaKartaIgralec)
+                    self.prvaKarta=self.igranaKartaIgralec
+                    self.racunalnik1_vrze()
+                    self.racunalnik2_vrze()
+                elif self.prvi == 'rac2':
+                    self.racunalnik1_vrze()
+                self.sestej_in_zacni()
 
 
     def racunalnik1_igra_prvi(self):
-        if len(self.karte_rac1) != 0:
-            #time.sleep(1)
-            self.pocisti()
-            self.prikazi_karte(self.razvrsti_karte(self.karte_igralec))
-            igranaKarta = self.karte_rac1[random.choice(list(self.karte_rac1.keys()))][-1]
-            self.igranaKartaRac1 = igranaKarta
+        #print('igra rac1')
+        time.sleep(1)
+        self.pocisti()
+        self.prikazi_karte(self.razvrsti_karte(self.karte_igralec))
+        igranaKarta = self.karte_rac1[random.choice(list(self.karte_rac1.keys()))][-1]
+        self.igranaKartaRac1 = igranaKarta
 
-            self.id_rac1 = self.canvas.create_image(500, 150, image=igranaKarta.slika, tag='zadnja')
-            self.karte_rac1[igranaKarta.barva].remove(igranaKarta)  # zbrišemo iz slovarja
-            # Brišemo barvo, če je računalnik nima več
-            if self.karte_rac1[igranaKarta.barva] == []:
-                self.karte_rac1.pop(igranaKarta.barva, None)
-            self.prvaKarta=self.igranaKartaRac1
-            t = Timer(2, self.racunalnik2_vrze)
-            t.start()
+        self.id_rac1 = self.canvas.create_image(500, 150, image=igranaKarta.slika, tag='zadnja')
+        self.karte_rac1[igranaKarta.barva].remove(igranaKarta)  # zbrišemo iz slovarja
+        # Brišemo barvo, če je računalnik nima več
+        if self.karte_rac1[igranaKarta.barva] == []:
+            self.karte_rac1.pop(igranaKarta.barva, None)
+        self.rac1_igral=True
+        self.rac2_igral=True
+        self.prvaKarta=self.igranaKartaRac1
+        t = Timer(2, self.racunalnik2_vrze)
+        t.start()
 
     def racunalnik2_igra_prvi(self):
-        if len(self.karte_rac1)!=0:
-            #time.sleep(1)
-            self.pocisti()
-            self.prikazi_karte(self.razvrsti_karte(self.karte_igralec))
-            igranaKarta = self.karte_rac2[random.choice(list(self.karte_rac2.keys()))][-1]
-            self.igranaKartaRac2 = igranaKarta
-            self.id_rac2 = self.canvas.create_image(700, 150, image=igranaKarta.slika, tag='zadnja')
-            self.karte_rac2[igranaKarta.barva].remove(igranaKarta)  # zbrišemo iz slovarja
-            # Brišemo barvo, če je računalnik nima več
-            if self.karte_rac2[igranaKarta.barva] == []:
-                self.karte_rac2.pop(igranaKarta.barva, None)
-            self.prvaKarta=self.igranaKartaRac2
+        #print('igra rac2')
+        time.sleep(1)
+        self.pocisti()
+        self.prikazi_karte(self.razvrsti_karte(self.karte_igralec))
+        igranaKarta = self.karte_rac2[random.choice(list(self.karte_rac2.keys()))][-1]
+        self.igranaKartaRac2 = igranaKarta
+
+        self.id_rac2 = self.canvas.create_image(700, 150, image=igranaKarta.slika, tag='zadnja')
+        self.karte_rac2[igranaKarta.barva].remove(igranaKarta)  # zbrišemo iz slovarja
+        # Brišemo barvo, če je računalnik nima več
+        if self.karte_rac2[igranaKarta.barva] == []:
+            self.karte_rac2.pop(igranaKarta.barva, None)
+        self.rac2_igral = True
+        self.prvaKarta=self.igranaKartaRac2
 
     def racunalnik1_vrze(self):
         '''pogleda kaj je uporabnik igral in vrže adekvatno karto'''
         barva = self.prvaKarta.barva
         moc = self.prvaKarta.moc
-        if self.prvi=='rac2' and self.prvaKarta.barva==self.drugaKarta.barva:
-            moc=max(self.prvaKarta.moc,self.drugaKarta.moc)
         igranaKarta = str()
         if barva in self.karte_rac1.keys():  # pogledamo, če rač ima sploh barvo
             if self.karte_rac1[barva] != []:
-                for karta in sorted(self.karte_rac1[barva]):
+                for karta in self.karte_rac1[barva]:
                     if karta.moc > moc:
                         igranaKarta = karta
-                        break
                     else:
-                        igranaKarta = sorted(self.karte_rac1[barva])[0]
+                        igranaKarta = self.karte_rac1[barva][0]
             else:
                 igranaKarta = self.karte_rac1["tarok"][0]
         else:
@@ -413,6 +420,7 @@ class Cela_igra():
                 igranaKarta = self.karte_rac1["tarok"][0]
             else:
                 igranaKarta = self.karte_rac1[random.choice(list(self.karte_rac1.keys()))][0]
+        #print(igranaKarta)
         self.igranaKartaRac1 = igranaKarta
 
         self.id_rac1 = self.canvas.create_image(500, 150, image=igranaKarta.slika, tag='zadnja')
@@ -423,19 +431,19 @@ class Cela_igra():
 
     def racunalnik2_vrze(self):
         '''pogleda kaj je uporabnik igral in vrže adekvatno karto'''
+        #print('rac2 vrze')
+        #barva = self.slovarSlik[self.igranaKarta][-1].barva
+        #moc = self.slovarSlik[self.igranaKarta][-1].moc
         barva=self.prvaKarta.barva
         moc=self.prvaKarta.moc
-        if self.prvi=='igralec' and self.prvaKarta.barva==self.drugaKarta.barva:
-            moc=max(self.prvaKarta.moc,self.drugaKarta.moc)
         igranaKarta = str()
         if barva in self.karte_rac2.keys(): #pogledamo, če rač ima sploh barvo
             if self.karte_rac2[barva] != []:
-                for karta in sorted(self.karte_rac2[barva]):
+                for karta in self.karte_rac2[barva]:
                     if karta.moc > moc:
                         igranaKarta = karta
-                        break
                     else:
-                        igranaKarta = sorted(self.karte_rac2[barva])[0]
+                        igranaKarta = self.karte_rac2[barva][0]
             else:
                 igranaKarta = self.karte_rac2["tarok"][0]
         else:
@@ -453,12 +461,15 @@ class Cela_igra():
 
     def sestej_in_zacni(self):
         '''sešteje točke in doloći kdo začne naslednjo rundo'''
+        #print(self.karte_rac1)
+        #print(self.karte_rac2)
         igralci=['igralec','rac1','rac2','igralec','rac1']
         if self.prvi == 'igralec':
             prva=self.igranaKartaIgralec
             druga=self.igranaKartaRac1
             tretja=self.igranaKartaRac2
             karte=[prva,druga,tretja]
+            #print(karte)
             self.prvi=igralci[pobere(karte)]
             if self.prvi=='igralec':
                 self.pobereIgralec = True
@@ -475,6 +486,7 @@ class Cela_igra():
             druga=self.igranaKartaRac2
             tretja=self.igranaKartaIgralec
             karte=[prva,druga,tretja]
+            #print(karte)
             self.prvi=igralci[pobere(karte)+1]
             if self.prvi=='igralec':
                 self.pobereIgralec = True
@@ -485,12 +497,12 @@ class Cela_igra():
             if self.prvi=='rac2':
                 self.pobereRac2 = True
                 self.pobraneRac2+= karte
-
         elif self.prvi == 'rac2':
             prva=self.igranaKartaRac2
             druga=self.igranaKartaIgralec
             tretja=self.igranaKartaRac1
             karte=[prva,druga,tretja]
+            #print(karte)
             self.prvi=igralci[pobere(karte)+2]
             if self.prvi=='igralec':
                 self.pobereIgralec = True
@@ -501,7 +513,6 @@ class Cela_igra():
             elif self.prvi=='rac2':
                 self.pobereRac2 = True
                 self.pobraneRac2+= karte
-
         if self.klop == True:
             if self.prvi == 'igralec' and self.karte_talon != []:
                 self.pobraneIgralec.append(self.karte_talon[0])
@@ -511,7 +522,7 @@ class Cela_igra():
                 self.pobraneRac2.append(self.karte_talon[0])
         if self.klop == True:
             self.karte_klop()
-        if len(self.karte_igralec) == 0:
+        if self.karte_igralec == [] and self.karte_rac2 == {} and self.karte_rac1 == {}:
             self.doloci_zmagovalca()
         t = Timer(3, self.igra_naslednji)
         t.start()
@@ -524,52 +535,48 @@ class Cela_igra():
         sporocilo = ''
         for karta in self.pobraneIgralec:
             tocke += karta.vrednost
-        tocke = tocke - 2 / 3 * (len(self.pobraneIgralec))
-        tocke = roundup(tocke)
+        tocke = tocke - 2/3*(len(self.pobraneIgralec))
         if self.tri or self.dva or self.ena:
             if tocke >= 35:
-                sporocilo = ('------------' + '\n' +
-                             'ZMAGAL SI!' + '\n' +
+                sporocilo = ('------------'+'\n'+
+                             'ZMAGAL SI!'+'\n'+
                              '------------')
             else:
-                sporocilo = ('------------' + '\n' +
-                             'IZGUBIL SI!' + '\n' +
+                sporocilo = ('------------'+'\n'+
+                             'IZGUBIL SI!'+'\n'+
                              '------------')
         else:
             for karta in self.pobraneRac1:
                 tockeRac1 += karta.vrednost
-            tockeRac1 -= 2 / 3 * (len(self.pobraneRac1))
-            tockeRac1 = roundup(tockeRac1)
             for karta in self.pobraneRac2:
                 tockeRac2 += karta.vrednost
-            tockeRac2 -= 2 / 3 * (len(self.pobraneRac2))
-            tockeRac2 = roundup(tockeRac2)
-            if min(tocke, tockeRac1, tockeRac2) == tocke:
-                sporocilo = ('------------------------------------' + '\n' +
-                             'Tvoje število tock: ' + str(tocke) + '\n' +
-                             'Število točk računalnika 1: ' + str(tockeRac1) + '\n' +
-                             'Število točk računalnika 2: ' + str(tockeRac2) + '\n' +
-                             '------------------------------------' + '\n' +
-                             'ZMAGAL SI!')
-            else:
-                sporocilo = ('------------------------------------' + '\n' +
-                             'Tvoje število tock: ' + str(tocke) + '\n' +
-                             'Število točk računalnika 1: ' + str(tockeRac1) + '\n' +
-                             'Število točk računalnika 2: ' + str(tockeRac2) + '\n' +
-                             '------------------------------------' + '\n' +
-                             'IZGUBIL SI!!')
+
+        if max(tocke, tockeRac1, tockeRac2) == tocke:
+            sporocilo = ('------------------------------------'+'\n'+
+                            'Tvoje število tock: '+str(tocke)+'\n'+
+                            'Število točk računalnika 1: '+str(tockeRac1)+'\n'+
+                            'Število točk računalnika 2: '+str(tockeRac2)+'\n'+
+                            '------------------------------------'+'\n'+
+                            'IZGUBIL SI!')
+        elif min(tocke, tockeRac1, tockeRac2) == tocke:
+            sporocilo = ('------------------------------------'+'\n'+
+                            'Tvoje število tock: '+str(tocke)+'\n'+
+                            'Število točk računalnika 1: '+str(tockeRac1)+'\n'+
+                            'Število točk računalnika 2: '+str(tockeRac2)+'\n'+
+                            '------------------------------------'+'\n'+
+                            'ZMAGAL SI!')
         okno = Tk()
         okno.wm_title("IZID IGRE")
-        okno.configure(width=100, height=100, background='#994C00')
-        oznaka = Label(okno, text=sporocilo, font=self.font)
-        oznaka.configure(background='#994C00')
-        oznaka.pack(side='top', fill='x', pady=100)
-        gumb = Button(okno, text='Nova Igra?', font=self.font, command=lambda: [self.nova_igra(), okno.destroy()])
-        gumb.configure(font=self.font, background='#994C00')
+        okno.configure(width = 100, height = 100, background = '#994C00')
+        oznaka = Label(okno, text = sporocilo, font = self.font)
+        oznaka.configure(background = '#994C00')
+        oznaka.pack(side = 'top', fill = 'x', pady = 100)
+        gumb = Button(okno, text = 'Nova Igra?', font = self.font, command = lambda:[self.nova_igra(),okno.destroy()])
+        gumb.configure(font = self.font, background = '#994C00')
         gumb.pack()
 
-
     def igra_naslednji(self):
+        '''pokliče naslednjega igralca'''
         self.pocisti_odigrano()
         if self.pobereRac1 == True:
             t = Timer(2, self.racunalnik1_igra_prvi)
@@ -583,6 +590,7 @@ class Cela_igra():
 
 
     def razdeli_karte(self):
+        '''razdeli karte'''
         PlaySound('Slike/Zvok.wav', SND_ASYNC)
         self.karte_talon = ustvari_karte()
         self.karte_igralec=random.sample(self.karte_talon,16)
@@ -592,6 +600,9 @@ class Cela_igra():
         self.karte_rac2 = random.sample(self.karte_talon, 16)
         self.karte_talon = list(self.karte_talon.difference(self.karte_rac2))
 
+        self.pomozniSeznamIgralec = self.karte_igralec.copy()
+
+        self.razvrsti_karte(self.pomozniSeznamIgralec)
         self.karte_rac1 = self.razvrsti_karte(self.karte_rac1)
         self.karte_rac2 = self.razvrsti_karte(self.karte_rac2)
         self.prikazi_karte(self.razvrsti_karte(self.karte_igralec))
